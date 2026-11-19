@@ -1,6 +1,10 @@
 /* EventSync Modern Design System */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --primary: #6366f1;
   --primary-hover: #4f46e5;
