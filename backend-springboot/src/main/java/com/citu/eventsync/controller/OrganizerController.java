@@ -76,16 +76,17 @@ public class OrganizerController {
     public ResponseEntity<byte[]> exportAttendeesCsv(@PathVariable Integer eventId) {
         List<Order> orders = orderRepository.findByEventEventId(eventId);
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() -> new RuntimeException("Event not found with ID: " + eventId));
 
         StringBuilder csv = new StringBuilder();
-        csv.append("Order ID,Attendee Name,Attendee Email,Ticket Tier,Unique Code,Purchase Date,Amount (PHP)\n");
+        csv.append("Order ID,Event Title,Attendee Name,Attendee Email,Ticket Tier,Unique Code,Purchase Date,Amount (PHP)\n");
 
         for (Order order : orders) {
             if (order.getOrderItems() != null) {
                 for (OrderItem item : order.getOrderItems()) {
                     csv.append(order.getOrderId()).append(",")
-                       .append("\"").append(order.getUser().getName()).append("\",")
+                       .append("\"").append(event.getTitle().replace("\"", "\"\"")).append("\",")
+                       .append("\"").append(order.getUser().getName().replace("\"", "\"\"")).append("\",")
                        .append(order.getUser().getEmail()).append(",")
                        .append("\"").append(item.getTicketType() != null ? item.getTicketType().getName() : "General").append("\",")
                        .append(item.getUniqueCode()).append(",")
