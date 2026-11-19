@@ -1,0 +1,28 @@
+# Node dependencies
+node_modules/
+.npm/
+
+# Build artifacts
+dist/
+build/
+target/
+*.class
+
+# Environment files
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE & OS files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
