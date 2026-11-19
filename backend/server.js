@@ -119,10 +119,22 @@ function writeDb(data) {
 // Ensure database file is initialized on startup
 readDb();
 
-// Initialize Supabase Client (if keys provided)
+// Initialize Supabase Client (safely, only if valid non-placeholder keys provided)
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
-const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
+let supabase = null;
+
+if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project-ref') && supabaseUrl.startsWith('http')) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      realtime: { createClient: false }
+    });
+  } catch (err) {
+    console.warn('Supabase initialization skipped:', err.message);
+    supabase = null;
+  }
+}
 
 // ----------------------------------------------------------------------
 // Authentication Middleware (Token Verification & Protected Routes)
