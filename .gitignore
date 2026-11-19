@@ -1,6 +1,8 @@
 # Node dependencies
 node_modules/
 .npm/
+.vite/
+frontend/.vite/
 
 # Build artifacts
 dist/
