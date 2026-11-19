@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { DollarSign, Ticket, Users, TrendingUp, Download, Eye, Calendar, MapPin, ChevronRight, CheckCircle2 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { DollarSign, Ticket, Users, TrendingUp, Download, Eye, Calendar, MapPin, Search, Filter, Plus, CheckCircle2, ChevronRight, BarChart3, Building } from 'lucide-react';
 
 export default function OrganizerDashboard({
   user,
@@ -23,18 +23,44 @@ export default function OrganizerDashboard({
   }
 
   const [selectedEventId, setSelectedEventId] = useState(null);
+  const [attendeeSearch, setAttendeeSearch] = useState('');
+  const [tierFilter, setTierFilter] = useState('All');
 
-  // Compute overall KPI metrics
+  // Compute Overall KPI Metrics
   const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
   const totalTicketsSold = orders.reduce((sum, o) => sum + Number(o.quantity || 0), 0);
   const totalCapacity = events.reduce((sum, e) => sum + Number(e.capacity || 0), 0) + totalTicketsSold;
   const overallOccupancy = totalCapacity > 0 ? Math.round((totalTicketsSold / totalCapacity) * 100) : 0;
 
-  // Filter attendees for selected event
+  // Selected event & orders
   const currentEvent = events.find(e => e.event_id === selectedEventId);
   const eventOrders = selectedEventId ? orders.filter(o => o.event_id === selectedEventId) : orders;
 
-  // FR-011: Export Attendee List as CSV
+  // Filter attendees
+  const filteredAttendees = useMemo(() => {
+    return eventOrders.flatMap(o => 
+      (o.ticket_codes || ['ES-2026-N/A']).map((code, idx) => ({
+        order_id: o.order_id,
+        user_name: o.user_name || 'Juan Dela Cruz',
+        user_email: o.user_email || 'attendee@citu.edu.ph',
+        event_title: o.event_title || (currentEvent ? currentEvent.title : 'Event'),
+        ticket_name: o.ticket_name || 'General Admission',
+        unique_code: code,
+        date: o.date,
+        total_amount: o.total_amount
+      }))
+    ).filter(item => {
+      const matchQuery = 
+        item.user_name.toLowerCase().includes(attendeeSearch.toLowerCase()) ||
+        item.user_email.toLowerCase().includes(attendeeSearch.toLowerCase()) ||
+        item.unique_code.toLowerCase().includes(attendeeSearch.toLowerCase());
+      
+      const matchTier = tierFilter === 'All' || item.ticket_name.toLowerCase().includes(tierFilter.toLowerCase());
+      return matchQuery && matchTier;
+    });
+  }, [eventOrders, attendeeSearch, tierFilter, currentEvent]);
+
+  // Export Attendees as CSV (FR-011)
   const handleExportCSV = (eventId) => {
     const targetOrders = eventId ? orders.filter(o => o.event_id === eventId) : orders;
     const targetEvent = events.find(e => e.event_id === eventId);
@@ -60,123 +86,131 @@ export default function OrganizerDashboard({
   return (
     <div className="space-y-8 pb-16">
       
-      {/* Header & Quick Action */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Organizer Sales Dashboard
-            </h1>
-            <span className="text-xs bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">
-              FR-010 Live
-            </span>
+      {/* Organizer Header Profile */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 relative overflow-hidden shadow-2xl">
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 to-indigo-600 p-0.5 shadow-xl shadow-pink-500/20">
+              <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center text-2xl font-black text-white">
+                {user ? user.name.charAt(0) : 'M'}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                  {user ? user.name : 'Mark Evon (Organizer)'}
+                </h1>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
+                  Organizer Verified
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                {user ? user.email : 'mark.organizer@eventsync.ph'} • Real-Time Sales & Analytics Control Center
+              </p>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Real-time analytics, revenue tracking, and attendee roster management
-          </p>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleExportCSV(selectedEventId)}
-            className="btn-secondary text-xs py-2.5 px-4"
-            title="Download full attendee list as CSV"
-          >
-            <Download className="w-4 h-4 text-emerald-400" />
-            <span>Export Attendees (CSV)</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleExportCSV(selectedEventId)}
+              className="btn-secondary text-xs py-2.5 px-4"
+              title="Download attendee roster as CSV"
+            >
+              <Download className="w-4 h-4 text-emerald-400" />
+              <span>Export CSV</span>
+            </button>
 
-          <button
-            onClick={onOpenCreateEvent}
-            className="btn-primary text-xs py-2.5 px-4"
-          >
-            + Create New Event
-          </button>
+            <button
+              onClick={onOpenCreateEvent}
+              className="btn-primary text-xs py-2.5 px-5 shadow-lg shadow-indigo-500/20"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Event</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* KPI Stats Cards (FR-010) */}
+      {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* Card 1: Total Revenue */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
+        {/* Total Revenue */}
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800/80">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-white">
+          <div className="text-2xl sm:text-3xl font-black text-white">
             ₱{totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1 mt-1">
-            <TrendingUp className="w-3 h-3" /> Live transactions
+          <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1 mt-1">
+            <TrendingUp className="w-3.5 h-3.5" /> Live transactions
           </span>
         </div>
 
-        {/* Card 2: Tickets Sold */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
+        {/* Tickets Sold */}
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800/80">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tickets Sold</span>
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
               <Ticket className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-white">
-            {totalTicketsSold}
-          </div>
-          <span className="text-[11px] text-slate-400 font-medium block mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-white">{totalTicketsSold}</div>
+          <span className="text-[11px] text-slate-400 font-medium mt-1 block">
             Across {events.length} published events
           </span>
         </div>
 
-        {/* Card 3: Active Events */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
+        {/* Active Events */}
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800/80">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Events</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-white">
-            {events.length}
-          </div>
-          <span className="text-[11px] text-slate-400 font-medium block mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-white">{events.length}</div>
+          <span className="text-[11px] text-slate-400 font-medium mt-1 block">
             Cebu & Central Visayas
           </span>
         </div>
 
-        {/* Card 4: Occupancy Rate */}
-        <div className="glass-panel p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
+        {/* Overall Occupancy */}
+        <div className="glass-panel p-5 rounded-2xl border border-slate-800/80">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Overall Occupancy</span>
-            <div className="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center border border-pink-500/20">
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-white">
-            {overallOccupancy}%
-          </div>
-          <span className="text-[11px] text-slate-400 font-medium block mt-1">
+          <div className="text-2xl sm:text-3xl font-black text-white">{overallOccupancy}%</div>
+          <span className="text-[11px] text-slate-400 font-medium mt-1 block">
             Inventory fill progress
           </span>
         </div>
 
       </div>
 
-      {/* Events Performance Table */}
-      <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+      {/* Visual Sales & Capacity Performance Table */}
+      <div className="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-white">Event Sales & Capacity Breakdown</h3>
-            <p className="text-xs text-slate-400">Click an event to filter attendee list below</p>
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-indigo-400" />
+              Event Sales & Capacity Breakdown
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">Click an event to filter attendee list below</p>
           </div>
           {selectedEventId && (
             <button
               onClick={() => setSelectedEventId(null)}
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-bold"
             >
-              Reset Filter (Show All)
+              Show All Events
             </button>
           )}
         </div>
@@ -220,7 +254,7 @@ export default function OrganizerDashboard({
                       <span className="font-bold text-indigo-400">{remaining} left</span>
                       <span className="text-slate-500 block text-[10px]">({evSold} sold)</span>
                     </td>
-                    <td className="p-4 text-right font-extrabold text-white text-sm">
+                    <td className="p-4 text-right font-black text-white text-sm">
                       ₱{evRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="p-4 text-center">
@@ -229,9 +263,9 @@ export default function OrganizerDashboard({
                           e.stopPropagation();
                           handleExportCSV(ev.event_id);
                         }}
-                        className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-200 border border-slate-700 inline-flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-200 border border-slate-700 inline-flex items-center gap-1.5 transition-colors"
                       >
-                        <Download className="w-3 h-3 text-emerald-400" />
+                        <Download className="w-3.5 h-3.5 text-emerald-400" />
                         CSV
                       </button>
                     </td>
@@ -243,32 +277,64 @@ export default function OrganizerDashboard({
         </div>
       </div>
 
-      {/* Registered Attendees Roster (FR-011) */}
-      <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Users className="w-4 h-4 text-indigo-400" />
-              Registered Attendee Roster (FR-011)
-            </h3>
-            <p className="text-xs text-slate-400">
-              {currentEvent ? `Showing attendees for "${currentEvent.title}"` : 'Showing all verified ticket holders across all events'}
-            </p>
+      {/* Attendee Roster with Real-time Search & Filter (FR-011) */}
+      <div className="glass-panel rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+        <div className="p-6 border-b border-slate-800 space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-indigo-400" />
+                Verified Registered Attendees (FR-011)
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Showing {filteredAttendees.length} verified ticket holder(s)
+              </p>
+            </div>
+
+            <button
+              onClick={() => handleExportCSV(selectedEventId)}
+              className="btn-primary text-xs py-2 px-4 shadow-md shadow-indigo-600/20"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export Roster (.CSV)</span>
+            </button>
           </div>
 
-          <button
-            onClick={() => handleExportCSV(selectedEventId)}
-            className="btn-primary text-xs py-2 px-3.5"
-          >
-            <Download className="w-3.5 h-3.5" />
-            Export This Roster (.CSV)
-          </button>
+          {/* Search & Filter Controls */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <div className="flex-1 relative">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                placeholder="Search by attendee name, email, or verification code..."
+                value={attendeeSearch}
+                onChange={e => setAttendeeSearch(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <select
+                value={tierFilter}
+                onChange={e => setTierFilter(e.target.value)}
+                className="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none cursor-pointer"
+              >
+                <option value="All">All Ticket Tiers</option>
+                <option value="Early Bird">Early Bird</option>
+                <option value="General">General Admission</option>
+                <option value="VIP">VIP All-Access</option>
+                <option value="Student">Student Hacker</option>
+              </select>
+            </div>
+          </div>
         </div>
 
+        {/* Attendee Table */}
         <div className="overflow-x-auto">
-          {eventOrders.length === 0 ? (
-            <div className="p-8 text-center text-xs text-slate-500">
-              No attendees registered for this selection yet.
+          {filteredAttendees.length === 0 ? (
+            <div className="p-10 text-center text-xs text-slate-500">
+              No matching attendees found for your search criteria.
             </div>
           ) : (
             <table className="w-full text-left text-xs">
@@ -283,20 +349,18 @@ export default function OrganizerDashboard({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {eventOrders.flatMap(o => 
-                  (o.ticket_codes || ['ES-2026-N/A']).map((code, idx) => (
-                    <tr key={`${o.order_id}-${idx}`} className="hover:bg-slate-800/30 text-slate-300">
-                      <td className="p-4 font-bold text-white">{o.user_name || 'Juan Dela Cruz'}</td>
-                      <td className="p-4 text-slate-400 font-mono text-[11px]">{o.user_email || 'attendee@citu.edu.ph'}</td>
-                      <td className="p-4 text-slate-300 font-medium">{o.event_title}</td>
-                      <td className="p-4">
-                        <span className="badge-tag">{o.ticket_name}</span>
-                      </td>
-                      <td className="p-4 font-mono-code font-bold text-indigo-400">{code}</td>
-                      <td className="p-4 text-slate-500">{new Date(o.date).toLocaleDateString()}</td>
-                    </tr>
-                  ))
-                )}
+                {filteredAttendees.map((item, idx) => (
+                  <tr key={`${item.order_id}-${idx}`} className="hover:bg-slate-800/40 text-slate-300 transition-colors">
+                    <td className="p-4 font-bold text-white">{item.user_name}</td>
+                    <td className="p-4 text-slate-400 font-mono text-[11px]">{item.user_email}</td>
+                    <td className="p-4 text-slate-300 font-medium">{item.event_title}</td>
+                    <td className="p-4">
+                      <span className="badge-tag">{item.ticket_name}</span>
+                    </td>
+                    <td className="p-4 font-mono-code font-bold text-indigo-400">{item.unique_code}</td>
+                    <td className="p-4 text-slate-500">{new Date(item.date).toLocaleDateString()}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           )}
