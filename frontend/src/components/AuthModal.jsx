@@ -114,7 +114,44 @@ export default function AuthModal({
 
     } catch (err) {
       console.error('Auth error:', err);
-      setErrorMessage(err.message || 'Server connection error. Make sure backend is running on :8080.');
+      
+      // Smart Fallback if backend on port 8080 is not currently running
+      if (err.message === 'Failed to fetch' || err.message.includes('fetch')) {
+        const cleanEmail = email.trim().toLowerCase();
+        
+        // Check if matching demo accounts or local storage
+        if (cleanEmail === 'mark.organizer@eventsync.ph' && password === 'Password123!') {
+          const fallbackUser = { user_id: 1, name: 'Mark Evon (Organizer)', email: cleanEmail, role: 'organizer' };
+          const token = 'jwt-session-organizer-local';
+          localStorage.setItem('eventsync_jwt_token', token);
+          localStorage.setItem('eventsync_user', JSON.stringify(fallbackUser));
+          setSuccessMessage('Signed in successfully! (Note: Start backend on :8080 for live DB)');
+          setTimeout(() => { onAuthSuccess(fallbackUser, token); onClose(); }, 600);
+          return;
+        } else if (cleanEmail === 'cit.student@citu.edu.ph' && password === 'Password123!') {
+          const fallbackUser = { user_id: 2, name: 'Juan Dela Cruz (Attendee)', email: cleanEmail, role: 'attendee' };
+          const token = 'jwt-session-attendee-local';
+          localStorage.setItem('eventsync_jwt_token', token);
+          localStorage.setItem('eventsync_user', JSON.stringify(fallbackUser));
+          setSuccessMessage('Signed in successfully! (Note: Start backend on :8080 for live DB)');
+          setTimeout(() => { onAuthSuccess(fallbackUser, token); onClose(); }, 600);
+          return;
+        } else if (mode === 'register') {
+          // Allow local registration fallback
+          const newId = Date.now();
+          const fallbackUser = { user_id: newId, name: name.trim(), email: cleanEmail, role };
+          const token = `jwt-session-local-${newId}`;
+          localStorage.setItem('eventsync_jwt_token', token);
+          localStorage.setItem('eventsync_user', JSON.stringify(fallbackUser));
+          setSuccessMessage('Account registered locally! (Tip: Run "npm start" in backend for live DB)');
+          setTimeout(() => { onAuthSuccess(fallbackUser, token); onClose(); }, 600);
+          return;
+        }
+
+        setErrorMessage('Backend server is not running on port 8080. Start it by running "npm start" inside the backend folder, or use the demo accounts below.');
+      } else {
+        setErrorMessage(err.message || 'Authentication error. Please check your credentials.');
+      }
     } finally {
       setIsLoading(false);
     }
