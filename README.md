@@ -45,6 +45,61 @@ All three Minimum Functional Requirements are **fully functional across the Fron
 
 ---
 
+## 📁 Complete Project Architecture & Structure
+
+```text
+EventSync/
+├── frontend/                     # ReactJS Frontend (Vite + Tailwind CSS + Lucide Icons)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── AuthModal.jsx             # User Account Creation & Login (BCrypt + JWT)
+│   │   │   ├── AttendeeDashboard.jsx     # Role-based Attendee Dashboard & Digital Passes
+│   │   │   ├── OrganizerDashboard.jsx    # Role-based Organizer Dashboard & CSV Export
+│   │   │   ├── EventDiscovery.jsx        # Public Event Discovery Feed with Search & Filters
+│   │   │   ├── EventCard.jsx             # Event Cards with Live Capacity Progress
+│   │   │   ├── EventDetailModal.jsx      # Ticket Selection with Concurrency Checks
+│   │   │   ├── DigitalTicketModal.jsx    # Digital Passes with Unique Code & Barcode
+│   │   │   ├── CreateEventModal.jsx      # Multi-tier Pricing & Capacity Management
+│   │   │   ├── MyTicketsView.jsx         # Attendee Verified Passes Viewer
+│   │   │   ├── Navbar.jsx                # Dynamic Role-based Navigation & Auth Controls
+│   │   │   └── SupabaseSettingsModal.jsx # Live Database Integration Connector
+│   │   ├── lib/
+│   │   │   ├── supabaseClient.js         # Supabase Client Initialization
+│   │   │   └── mockData.js               # Initial Seed Events & Demo Users
+│   │   ├── App.jsx                       # Root Application Orchestrator & Session Guards
+│   │   ├── index.css                     # Modern Glassmorphic Design System
+│   │   └── main.jsx                      # React Root Entrypoint
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   └── postcss.config.js
+├── backend/                      # Node.js & Express API Backend
+│   ├── src/
+│   │   └── server.js             # Auth Routes, BCrypt Hashing, JWT Sessions, RBAC Middleware
+│   ├── data/
+│   │   └── database.json         # Real Persistent Database Storage on Disk
+│   ├── tests/
+│   │   └── auth.test.js          # Automated Auth & Role Verification Test Suite
+│   ├── package.json
+│   └── .env.example
+├── backend-springboot/           # Enterprise Java Spring Boot 3 Backend (SRS Architecture)
+│   ├── pom.xml                   # Maven Configuration (Spring Web, Data JPA, PostgreSQL, SendGrid)
+│   ├── src/main/resources/
+│   │   └── application.properties # PostgreSQL & Database Connection Settings
+│   └── src/main/java/com/citu/eventsync/
+│       ├── EventSyncApplication.java
+│       ├── controller/           # UserController, EventController, OrderController, OrganizerController
+│       ├── model/                # User, Event, TicketType, Order, OrderItem JPA Entities
+│       ├── repository/           # Spring Data JPA Repositories with Pessimistic Write Lock
+│       └── service/              # EventService, OrderService, EmailService
+├── supabase/                     # PostgreSQL Cloud Database Architecture
+│   ├── schema.sql                # Complete ERD Schema, BCrypt Hash Support, & Row-locking Functions
+│   └── setup_guide.md            # Step-by-Step Cloud PostgreSQL Walkthrough
+└── README.md                     # Comprehensive Increment 1 Documentation & Setup Guide
+```
+
+---
+
 ## 🗄️ Database Schema (`users` Table)
 
 ```sql
