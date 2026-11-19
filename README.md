@@ -2,6 +2,7 @@
 **Course:** IT342 – Systems Integration and Architecture 1  
 **Institution:** Cebu Institute of Technology – University (CIT-U)  
 **Author:** Mark Evon S. Verano  
+**GitHub Repository:** [https://github.com/ObjPatik/EventSync](https://github.com/ObjPatik/EventSync)  
 **Assignment:** Project Increment 1 – User Accounts and Authentication  
 **Submission Deadline:** November 19, 2026, 9:00 PM / 21:30  
 **Submission Form:** [https://forms.gle/yvRC4QJQu3kDhX718](https://forms.gle/yvRC4QJQu3kDhX718)  
