@@ -1,0 +1,110 @@
+{
+  "users": [
+    {
+      "user_id": 1,
+      "email": "mark.organizer@eventsync.ph",
+      "password_hash": "$2a$10$Q8BLq9xzUpZmJP7YwmHvieS8P9s/A2v5C2J5nMacGuL3umsMr8xSS",
+      "role": "organizer",
+      "name": "Mark Evon (Organizer)",
+      "created_at": "2026-11-05T09:00:00Z"
+    },
+    {
+      "user_id": 2,
+      "email": "cit.student@citu.edu.ph",
+      "password_hash": "$2a$10$Q8BLq9xzUpZmJP7YwmHvieS8P9s/A2v5C2J5nMacGuL3umsMr8xSS",
+      "role": "attendee",
+      "name": "Juan Dela Cruz (Attendee)",
+      "created_at": "2026-11-06T10:00:00Z"
+    },
+    {
+      "user_id": 3,
+      "name": "CIT-U Test Student",
+      "email": "test.student.1795085106269@citu.edu.ph",
+      "password_hash": "$2a$10$g2NsxRJ9em7ViwpQqZCvh.D7y3t.cPk7aXRRxiplnEwwAn3pIAZYW",
+      "role": "attendee",
+      "created_at": "2026-11-19T10:45:06.324Z"
+    }
+  ],
+  "events": [
+    {
+      "event_id": 1,
+      "org_id": 1,
+      "title": "Cebu Tech Summit 2026",
+      "description": "The premier technology conference in Central Visayas, bringing together software engineers, cloud architects, and tech founders.",
+      "date": "2026-12-15T09:00:00+08:00",
+      "location": "Waterfront Cebu City Hotel & Casino, Lahug",
+      "capacity": 250,
+      "category": "Technology",
+      "banner_url": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800",
+      "status": "published",
+      "ticket_types": [
+        {
+          "ticket_id": 1,
+          "name": "Early Bird Ticket",
+          "price": 250,
+          "available_qty": 45,
+          "initial_qty": 50
+        },
+        {
+          "ticket_id": 2,
+          "name": "General Admission",
+          "price": 500,
+          "available_qty": 140,
+          "initial_qty": 150
+        },
+        {
+          "ticket_id": 3,
+          "name": "VIP All-Access Pass",
+          "price": 1200,
+          "available_qty": 48,
+          "initial_qty": 50
+        }
+      ]
+    },
+    {
+      "event_id": 2,
+      "org_id": 1,
+      "title": "CIT-U IT Hackathon & Innovation Expo",
+      "description": "Annual 24-hour hackathon hosted by CIT University. Compete, build cutting-edge solutions, and win exciting prizes!",
+      "date": "2026-11-28T08:00:00+08:00",
+      "location": "CIT-U Gymnasium, N. Bacalso Ave, Cebu City",
+      "capacity": 150,
+      "category": "Academic",
+      "banner_url": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800",
+      "status": "published",
+      "ticket_types": [
+        {
+          "ticket_id": 4,
+          "name": "Student Hacker Ticket",
+          "price": 0,
+          "available_qty": 95,
+          "initial_qty": 100
+        },
+        {
+          "ticket_id": 5,
+          "name": "Observer / Mentor Ticket",
+          "price": 150,
+          "available_qty": 48,
+          "initial_qty": 50
+        }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "order_id": 1,
+      "user_id": 2,
+      "user_name": "Juan Dela Cruz (Attendee)",
+      "user_email": "cit.student@citu.edu.ph",
+      "event_id": 1,
+      "event_title": "Cebu Tech Summit 2026",
+      "ticket_name": "Early Bird Ticket",
+      "quantity": 1,
+      "total_amount": 250,
+      "date": "2026-11-10T14:32:00+08:00",
+      "ticket_codes": [
+        "ES-2026-CEB-89X2"
+      ]
+    }
+  ]
+}
